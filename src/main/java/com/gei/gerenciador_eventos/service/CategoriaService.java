@@ -34,4 +34,15 @@ public class CategoriaService {
         categoria = repository.save(categoria);
         return CategoriaMapper.toDTO(categoria);
     }
+
+    public CategoriaResponseDTO update(Long id, CategoriaRequestDTO requestDTO) {
+        Categoria categoria = repository.findById(id).orElseThrow(() -> new RuntimeException("Categoria não encontrada."));
+        categoria.setNome(requestDTO.getNome());
+        categoria = repository.save(categoria);
+        return CategoriaMapper.toDTO(categoria);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
 }

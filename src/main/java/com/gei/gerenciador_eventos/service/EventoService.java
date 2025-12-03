@@ -36,6 +36,12 @@ public class EventoService {
                 .collect(Collectors.toList());
     }
 
+    public EventoResponseDTO findById(Long id) {
+        return eventoRepository.findById(id)
+                .map(EventoMapper::toDTO)
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado."));
+    }
+
     public EventoResponseDTO create(EventoRequestDTO requestDTO) {
         Usuario organizador = usuarioRepository.findById(requestDTO.getOrganizadorId())
                 .orElseThrow(() -> new RuntimeException("Organizador não encontrado."));
@@ -56,6 +62,42 @@ public class EventoService {
         Evento evento = EventoMapper.toEntity(requestDTO, organizador, local, categoria);
         evento = eventoRepository.save(evento);
         return EventoMapper.toDTO(evento);
+    }
+
+    public EventoResponseDTO update(Long id, EventoRequestDTO requestDTO) {
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado."));
+
+        Usuario organizador = usuarioRepository.findById(requestDTO.getOrganizadorId())
+                .orElseThrow(() -> new RuntimeException("Organizador não encontrado."));
+
+        if (!organizador.getPerfil().equals(Perfil.ORGANIZADOR)) {
+            throw new RuntimeException("Apenas organizadores podem criar eventos.");
+        }
+
+        Local local = localRepository.findById(requestDTO.getLocalId())
+                .orElseThrow(() -> new RuntimeException("Local não encontrado."));
+        Categoria categoria = categoriaRepository.findById(requestDTO.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada."));
+
+        if(requestDTO.getLimiteVagas() > local.getCapacidade()){
+            throw new RuntimeException("O limite de vagas não pode ser maior que a capacidade do local.");
+        }
+
+        evento.setNome(requestDTO.getNome());
+        evento.setDescricao(requestDTO.getDescricao());
+        evento.setData(requestDTO.getData());
+        evento.setLimiteVagas(requestDTO.getLimiteVagas());
+        evento.setOrganizador(organizador);
+        evento.setLocal(local);
+        evento.setCategoria(categoria);
+
+        evento = eventoRepository.save(evento);
+        return EventoMapper.toDTO(evento);
+    }
+
+    public void delete(Long id) {
+        eventoRepository.deleteById(id);
     }
 
 }

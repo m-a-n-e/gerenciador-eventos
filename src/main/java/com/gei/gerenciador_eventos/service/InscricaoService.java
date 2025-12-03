@@ -36,6 +36,12 @@ public class InscricaoService {
                 .collect(Collectors.toList());
     }
 
+    public InscricaoResponseDTO findById(Long id) {
+        return inscricaoRepository.findById(id)
+                .map(InscricaoMapper::toDTO)
+                .orElseThrow(() -> new RuntimeException("Inscrição não encontrada."));
+    }
+
     @Transactional
     public InscricaoResponseDTO create(InscricaoRequestDTO requestDTO) {
         Usuario usuario = usuarioRepository.findById(requestDTO.getUsuarioId())
@@ -58,5 +64,27 @@ public class InscricaoService {
         inscricao = inscricaoRepository.save(inscricao);
 
         return InscricaoMapper.toDTO(inscricao);
+    }
+
+    @Transactional
+    public InscricaoResponseDTO update(Long id, InscricaoRequestDTO requestDTO) {
+        Inscricao inscricao = inscricaoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inscrição não encontrada."));
+
+        Usuario usuario = usuarioRepository.findById(requestDTO.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        Evento evento = eventoRepository.findById(requestDTO.getEventoId())
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado."));
+
+        inscricao.setUsuario(usuario);
+        inscricao.setEvento(evento);
+
+        inscricao = inscricaoRepository.save(inscricao);
+
+        return InscricaoMapper.toDTO(inscricao);
+    }
+
+    public void delete(Long id) {
+        inscricaoRepository.deleteById(id);
     }
 }

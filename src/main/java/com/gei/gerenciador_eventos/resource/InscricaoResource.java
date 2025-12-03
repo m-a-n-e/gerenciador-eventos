@@ -24,11 +24,27 @@ public class InscricaoResource {
         return ResponseEntity.ok(service.findByEventoId(eventoId));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<InscricaoResponseDTO> findById(@PathVariable Long id){
+        return ResponseEntity.ok(service.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<InscricaoResponseDTO> create(@Valid @RequestBody InscricaoRequestDTO requestDTO) {
         InscricaoResponseDTO responseDTO = service.create(requestDTO);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(responseDTO.getId()).toUri();
         return ResponseEntity.created(uri).body(responseDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<InscricaoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody InscricaoRequestDTO requestDTO){
+        return ResponseEntity.ok(service.update(id, requestDTO));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -18,11 +18,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
         ApiError apiError = new ApiError(
                 LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.INTERNAL_SERVER_ERROR,
                 ex.getMessage(),
                 request.getRequestURI()
         );
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
         ApiError apiError = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Ocorreu um erro inesperado.",
+                ex.getMessage(),
                 request.getRequestURI()
         );
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);

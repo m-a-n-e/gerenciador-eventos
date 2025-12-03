@@ -34,4 +34,17 @@ public class LocalService {
         local = repository.save(local);
         return LocalMapper.toDTO(local);
     }
+
+    public LocalResponseDTO update(Long id, LocalRequestDTO requestDTO) {
+        Local local = repository.findById(id).orElseThrow(() -> new RuntimeException("Local não encontrado."));
+        local.setNome(requestDTO.getNome());
+        local.setEndereco(requestDTO.getEndereco());
+        local.setCapacidade(requestDTO.getCapacidade());
+        local = repository.save(local);
+        return LocalMapper.toDTO(local);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
 }

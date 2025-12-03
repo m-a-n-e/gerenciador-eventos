@@ -36,4 +36,15 @@ public class LocalResource {
                 .buildAndExpand(responseDTO.getId()).toUri();
         return ResponseEntity.created(uri).body(responseDTO);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<LocalResponseDTO> update(@PathVariable Long id, @Valid @RequestBody LocalRequestDTO requestDTO){
+        return ResponseEntity.ok(service.update(id, requestDTO));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
