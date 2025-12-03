@@ -1,6 +1,7 @@
 package com.gei.gerenciador_eventos.resource;
 
 import com.gei.gerenciador_eventos.dto.request.InscricaoRequestDTO;
+import com.gei.gerenciador_eventos.dto.request.InscricaoUpdateDTO;
 import com.gei.gerenciador_eventos.dto.response.InscricaoResponseDTO;
 import com.gei.gerenciador_eventos.service.InscricaoService;
 import jakarta.validation.Valid;
@@ -18,6 +19,11 @@ public class InscricaoResource {
 
     @Autowired
     private InscricaoService service;
+
+    @GetMapping
+    public ResponseEntity<List<InscricaoResponseDTO>> findAll() {
+        return ResponseEntity.ok(service.findAll());
+    }
 
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<List<InscricaoResponseDTO>> findByEventoId(@PathVariable Long eventoId) {
@@ -38,8 +44,8 @@ public class InscricaoResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<InscricaoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody InscricaoRequestDTO requestDTO){
-        return ResponseEntity.ok(service.update(id, requestDTO));
+    public ResponseEntity<InscricaoResponseDTO> updateStatus(@PathVariable Long id, @Valid @RequestBody InscricaoUpdateDTO requestDTO){
+        return ResponseEntity.ok(service.updateStatus(id, requestDTO));
     }
 
     @DeleteMapping("/{id}")

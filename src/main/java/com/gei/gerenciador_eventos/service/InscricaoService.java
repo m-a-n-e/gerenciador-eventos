@@ -1,6 +1,7 @@
 package com.gei.gerenciador_eventos.service;
 
 import com.gei.gerenciador_eventos.dto.request.InscricaoRequestDTO;
+import com.gei.gerenciador_eventos.dto.request.InscricaoUpdateDTO;
 import com.gei.gerenciador_eventos.dto.response.InscricaoResponseDTO;
 import com.gei.gerenciador_eventos.entity.Evento;
 import com.gei.gerenciador_eventos.entity.Inscricao;
@@ -21,20 +22,41 @@ import java.util.stream.Collectors;
 @Service
 public class InscricaoService {
 
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
+        @Autowired
 
-    @Autowired
-    private EventoRepository eventoRepository;
+        private InscricaoRepository inscricaoRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+        @Autowired
 
-    public List<InscricaoResponseDTO> findByEventoId(Long eventoId) {
-        return inscricaoRepository.findByEventoId(eventoId).stream()
-                .map(InscricaoMapper::toDTO)
-                .collect(Collectors.toList());
-    }
+        private EventoRepository eventoRepository;
+
+        @Autowired
+
+        private UsuarioRepository usuarioRepository;
+
+    
+
+        public List<InscricaoResponseDTO> findAll() {
+
+            return inscricaoRepository.findAll().stream()
+
+                    .map(InscricaoMapper::toDTO)
+
+                    .collect(Collectors.toList());
+
+        }
+
+    
+
+        public List<InscricaoResponseDTO> findByEventoId(Long eventoId) {
+
+            return inscricaoRepository.findByEventoId(eventoId).stream()
+
+                    .map(InscricaoMapper::toDTO)
+
+                    .collect(Collectors.toList());
+
+        }
 
     public InscricaoResponseDTO findById(Long id) {
         return inscricaoRepository.findById(id)
@@ -42,42 +64,32 @@ public class InscricaoService {
                 .orElseThrow(() -> new RuntimeException("Inscrição não encontrada."));
     }
 
-    @Transactional
     public InscricaoResponseDTO create(InscricaoRequestDTO requestDTO) {
-        Usuario usuario = usuarioRepository.findById(requestDTO.getUsuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        inscricaoRepository.findByUsuarioIdAndEventoId(requestDTO.getUsuarioId(), requestDTO.getEventoId()).ifPresent(inscricao -> {
+            throw new RuntimeException("Este usuário já está inscrito neste evento.");
+        });
+
         Evento evento = eventoRepository.findById(requestDTO.getEventoId())
                 .orElseThrow(() -> new RuntimeException("Evento não encontrado."));
+        Usuario usuario = usuarioRepository.findById(requestDTO.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-        // REGRA CRÍTICA
-        Long vagasOcupadas = eventoRepository.countInscricoesConfirmadasByEventoId(evento.getId());
-        if (vagasOcupadas >= evento.getLimiteVagas()) {
-            throw new RuntimeException("Não há vagas disponíveis para este evento.");
+        if (evento.getInscricoes().size() >= evento.getLimiteVagas()) {
+            throw new RuntimeException("O evento já atingiu o limite de vagas.");
         }
 
-        Inscricao inscricao = new Inscricao();
-        inscricao.setUsuario(usuario);
-        inscricao.setEvento(evento);
-        inscricao.setDataInscricao(LocalDateTime.now());
-        inscricao.setStatus(StatusInscricao.CONFIRMADA);
-
+        Inscricao inscricao = InscricaoMapper.toEntity(requestDTO, evento, usuario);
+        inscricao.setStatus(StatusInscricao.PENDENTE);
         inscricao = inscricaoRepository.save(inscricao);
-
         return InscricaoMapper.toDTO(inscricao);
     }
 
     @Transactional
-    public InscricaoResponseDTO update(Long id, InscricaoRequestDTO requestDTO) {
+    public InscricaoResponseDTO updateStatus(Long id, InscricaoUpdateDTO requestDTO) {
         Inscricao inscricao = inscricaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inscrição não encontrada."));
 
-        Usuario usuario = usuarioRepository.findById(requestDTO.getUsuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-        Evento evento = eventoRepository.findById(requestDTO.getEventoId())
-                .orElseThrow(() -> new RuntimeException("Evento não encontrado."));
-
-        inscricao.setUsuario(usuario);
-        inscricao.setEvento(evento);
+        inscricao.setStatus(requestDTO.getStatus());
 
         inscricao = inscricaoRepository.save(inscricao);
 

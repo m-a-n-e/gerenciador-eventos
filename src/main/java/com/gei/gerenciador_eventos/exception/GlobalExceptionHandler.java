@@ -2,6 +2,7 @@ package com.gei.gerenciador_eventos.exception;
 
 import com.gei.gerenciador_eventos.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +14,25 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+        String message = "Erro de integridade de dados.";
+        if (ex.getCause() != null && ex.getCause().getCause() != null) {
+            String causeMessage = ex.getCause().getCause().getMessage();
+            if (causeMessage.contains("viola restrição de chave estrangeira")) {
+                message = "Não é possível excluir este registro, pois ele está sendo referenciado por outro registro.";
+            }
+        }
+
+        ApiError apiError = new ApiError(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT,
+                message,
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiError> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {

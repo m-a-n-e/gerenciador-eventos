@@ -7,13 +7,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class InscricaoRequestDTO {
+public class InscricaoUpdateDTO {
 
-    @NotNull(message = "O ID do usuário é obrigatório.")
-    private Long usuarioId;
-
-    @NotNull(message = "O ID do evento é obrigatório.")
-    private Long eventoId;
-
+    @NotNull(message = "O status da inscrição é obrigatório.")
     private StatusInscricao status;
 }
