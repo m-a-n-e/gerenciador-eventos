@@ -1,0 +1,34 @@
+package com.gei.gerenciador_eventos.resource;
+
+import com.gei.gerenciador_eventos.dto.request.EventoRequestDTO;
+import com.gei.gerenciador_eventos.dto.response.EventoResponseDTO;
+import com.gei.gerenciador_eventos.service.EventoService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping("/eventos")
+public class EventoResource {
+
+    @Autowired
+    private EventoService service;
+
+    @GetMapping
+    public ResponseEntity<List<EventoResponseDTO>> findAll() {
+        return ResponseEntity.ok(service.findAll());
+    }
+
+    @PostMapping
+    public ResponseEntity<EventoResponseDTO> create(@Valid @RequestBody EventoRequestDTO requestDTO) {
+        EventoResponseDTO responseDTO = service.create(requestDTO);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(responseDTO.getId()).toUri();
+        return ResponseEntity.created(uri).body(responseDTO);
+    }
+}
